@@ -165,61 +165,8 @@ def lineHitsRect(p1,p2,r, dilation=0.75):
 
         if notSameSgn(turn1, turn2) and notSameSgn(turn3, turn4):
             return True
-        
-        '''
-        if turn1 == 0 and turn2 == 0:
-            left_x = side[0][0]
-            right_x = side[1][0]
-            top_y = side[0][1]
-            bottom_y = side[1][1]
-            if top_y == bottom_y \
-                and ((left_x < p1[0] and p1[0] < right_x) \
-                or (left_x < p2[0] and p2[0] < right_x)):
-                return True
-            elif left_x == right_x \
-                and ((bottom_y < p1[1] and p1[1] < top_y) \
-                or (bottom_y < p2[1] and p2[1] < top_y)):
-                return True
-        '''
 
     return False
-
-
-    '''
-    # CONSIDER IF p2[0] == p1[0]
-    # LINE FROM POINT
-    # slope m
-    m = (p2[1] - p1[1]) / (p2[0] - p1[0])
-    # y-intercept b = y - mx
-    b = p1[1] - m * p1[0]
-    # rectangle corner points: x1, x2, y1, y2
-    x1, y1, x2, y2 = r
-
-    x_left = p1[0]
-    x_right = p2[0]
-    if p1[0] > p2[0]:
-        x_left, x_right = x_right, x_left
-    y_top = p1[1]
-    y_bottom = p2[1]
-    if p1[1] < p2[1]:
-        y_top, y_bottom = y_bottom, y_top
-
-    # fill in x or y for a rectangle side to get y or x
-    # then check if the above point (x, y) is touching the rectangle side
-    # and check if it's within the line segment
-
-    for x in [x1, x2]:
-        y = m * x + b
-        if y1 <= y and y <= y2 \
-        and x_left <= :
-            return True
-    for y in [y1, y2]:
-        x = (y - b) / m
-        if x1 <= x and x <= x2:
-            return True
-
-    return False
-    '''
 
 def inRect(p,rect,dilation):
     """ Return 1 in p is inside rect, dilated by dilation (for edge cases). """
