@@ -82,7 +82,7 @@ def genPoint():
         if y>YMAX: bad = 1
     return [x,y]
 
-def returnParent(k, canvas):
+def returnParent(k, canvas, G):
     """ Return parent note for input node k. """
     for e in G[edges]:
         if e[1]==k:
@@ -100,28 +100,138 @@ def pointToVertex(p):
 def pickvertex():
     return random.choice( range(len(vertices) ))
 
-def lineFromPoints(p1,p2):
+def lineFromPoints(p1,p2): # vector starts from p1
     #TODO
-    return None
+    vector = [p2[0] - p1[0], p2[1] - p1[1]]
+    return vector
 
 
 def pointPointDistance(p1,p2):
     #TODO
-    return 0
+    x = p2[0] - p1[0]
+    y = p2[1] - p1[1]
+    dist = math.sqrt(x ** 2 + y ** 2)
+    return dist
 
+# x_nearest <- Nearest(G = (V, E), x_rand)
 def closestPointToPoint(G,p2):
     #TODO
-    #return vertex index
-    return 0
+    min_sq_dist = float('inf')
+    v_i = 0
+    for i in G[0]:
+        x = vertices[i][0] - p2[0]
+        y = vertices[i][1] - p2[1]
+        sq_dist = x ** 2 + y ** 2
+        if sq_dist < min_sq_dist:
+            min_sq_dist = sq_dist
+            v_i = i
 
-def lineHitsRect(p1,p2,r):
+    #return vertex index
+    return v_i
+
+def signedArea(l1, l2):
+    return l1[0] * l2[1] - l2[0] * l1[1]
+
+def notSameSgn(num1, num2):
+    return ((num1 <= 0 and num2 >= 0) \
+        or (num1 >= 0 and num2 <= 0)) \
+        and not (num1 == 0 and num2 == 0)
+
+def lineHitsRect(p1,p2,r, dilation=0.75):
     #TODO
+    x1, y1, x2, y2 = r # rectangle corner points
+    x1 -= dilation
+    y1 -= dilation
+    x2 += dilation
+    y2 += dilation
+    sides = [
+        [[x1, y1], [x2, y1]],
+        [[x1, y2], [x2, y2]],
+        [[x1, y1], [x1, y2]],
+        [[x2, y1], [x2, y2]],
+    ]
+    
+    for side in sides:
+        l1 = lineFromPoints(p1, p2)
+        l2 = lineFromPoints(p2, side[0])
+        l3 = lineFromPoints(p2, side[1])
+        turn1 = signedArea(l1, l2)
+        turn2 = signedArea(l1, l3)
+        l4 = lineFromPoints(side[0], side[1])
+        l5 = lineFromPoints(side[1], p1)
+        l6 = lineFromPoints(side[1], p2)
+        turn3 = signedArea(l4, l5)
+        turn4 = signedArea(l4, l6)
+
+        if notSameSgn(turn1, turn2) and notSameSgn(turn3, turn4):
+            return True
+        
+        '''
+        if turn1 == 0 and turn2 == 0:
+            left_x = side[0][0]
+            right_x = side[1][0]
+            top_y = side[0][1]
+            bottom_y = side[1][1]
+            if top_y == bottom_y \
+                and ((left_x < p1[0] and p1[0] < right_x) \
+                or (left_x < p2[0] and p2[0] < right_x)):
+                return True
+            elif left_x == right_x \
+                and ((bottom_y < p1[1] and p1[1] < top_y) \
+                or (bottom_y < p2[1] and p2[1] < top_y)):
+                return True
+        '''
+
     return False
+
+
+    '''
+    # CONSIDER IF p2[0] == p1[0]
+    # LINE FROM POINT
+    # slope m
+    m = (p2[1] - p1[1]) / (p2[0] - p1[0])
+    # y-intercept b = y - mx
+    b = p1[1] - m * p1[0]
+    # rectangle corner points: x1, x2, y1, y2
+    x1, y1, x2, y2 = r
+
+    x_left = p1[0]
+    x_right = p2[0]
+    if p1[0] > p2[0]:
+        x_left, x_right = x_right, x_left
+    y_top = p1[1]
+    y_bottom = p2[1]
+    if p1[1] < p2[1]:
+        y_top, y_bottom = y_bottom, y_top
+
+    # fill in x or y for a rectangle side to get y or x
+    # then check if the above point (x, y) is touching the rectangle side
+    # and check if it's within the line segment
+
+    for x in [x1, x2]:
+        y = m * x + b
+        if y1 <= y and y <= y2 \
+        and x_left <= :
+            return True
+    for y in [y1, y2]:
+        x = (y - b) / m
+        if x1 <= x and x <= x2:
+            return True
+
+    return False
+    '''
 
 def inRect(p,rect,dilation):
     """ Return 1 in p is inside rect, dilated by dilation (for edge cases). """
     #TODO
-    return False
+    
+    if rect[0] - dilation <= p[0] \
+    and p[0] <= rect[2] + dilation \
+    and rect[3] - dilation <= p[0] \
+    and p[0] <= rect[1] + dilation:
+        return 1
+    else:
+        return 0
 
 def rrt_search(G, tx, ty, canvas):
     #TODO
@@ -132,8 +242,14 @@ def rrt_search(G, tx, ty, canvas):
     n=0
     nsteps=0
     while 1:
-        p = genPoint()
+        p = genPoint() # x_rand <- SampleFree
         v = closestPointToPoint(G,p)
+        #TODO (INFORMAL) x_new <- Steer(x_nearest, x_rand)
+        vector = lineFromPoints(vertices[v], p)
+        magnitude = math.sqrt(vector[0] ** 2 + vector[1] ** 2)
+        unit_vector = [vector[0] / magnitude, vector[1] / magnitude]
+        step_vector = [SMALLSTEP * unit_vector[0], SMALLSTEP * unit_vector[1]]
+        p = [sum(i) for i in zip(vertices[v], step_vector)]
 
         if visualize:
             # if nsteps%500 == 0: redraw()  # erase generated points now and then or it gets too cluttered
@@ -142,18 +258,28 @@ def rrt_search(G, tx, ty, canvas):
                 canvas.events()
                 n=0
 
+        #TODO (INFORMAL)
+        restart = False
 
         for o in obstacles:
             #if inRect(p,o,1):
             if lineHitsRect(vertices[v],p,o) or inRect(p,o,1):
-                print "TODO"
+                # print "TODO"
+                restart = True
+                break
                 #... reject
+        
+        #TODO (INFORMAL)
+        if restart: continue
 
         k = pointToVertex( p )   # is the new vertex ID
         G[nodes].append(k)
         G[edges].append( (v,k) )
         if visualize:
             canvas.polyline(  [vertices[v], vertices[k] ]  )
+
+        #TODO (INFORMAL)
+        nsteps += 1
 
         if pointPointDistance( p, [tx,ty] ) < SMALLSTEP:
             print "Target achieved.", nsteps, "nodes in entire tree"
@@ -169,7 +295,7 @@ def rrt_search(G, tx, ty, canvas):
                 totaldist = 0
                 while 1:
                     oldp = vertices[k]  # remember point to compute distance
-                    k = returnParent(k, canvas)  # follow links back to root.
+                    k = returnParent(k, canvas, G)  # follow links back to root.
                     canvas.events()
                     if k <= 1: break  # have we arrived?
                     nsteps = nsteps + 1  # count steps
@@ -179,11 +305,9 @@ def rrt_search(G, tx, ty, canvas):
                 global prompt_before_next
                 if prompt_before_next:
                     canvas.events()
-                    print
-                    "More [c,q,g,Y]>",
+                    print "More [c,q,g,Y]>",
                     d = sys.stdin.readline().strip().lstrip()
-                    print
-                    "[" + d + "]"
+                    print "[" + d + "]"
                     if d == "c": canvas.delete()
                     if d == "q": return
                     if d == "g": prompt_before_next = 0
