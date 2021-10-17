@@ -105,13 +105,17 @@ def lineFromPoints(p1,p2): # vector starts from p1
     vector = [p2[0] - p1[0], p2[1] - p1[1]]
     return vector
 
+#TODO (INFORMAL)
+def pointpointSqDist(p1, p2):
+    x = p2[0] - p1[0]
+    y = p2[1] - p1[1]
+    sqDist = x ** 2 + y ** 2
+    return sqDist
 
 def pointPointDistance(p1,p2):
     #TODO
-    x = p2[0] - p1[0]
-    y = p2[1] - p1[1]
-    dist = math.sqrt(x ** 2 + y ** 2)
-    return dist
+    sqDist = pointpointSqDist(p1, p2)
+    return math.sqrt(sqDist)
 
 # x_nearest <- Nearest(G = (V, E), x_rand)
 def closestPointToPoint(G,p2):
@@ -119,9 +123,7 @@ def closestPointToPoint(G,p2):
     min_sq_dist = float('inf')
     v_i = 0
     for i in G[0]:
-        x = vertices[i][0] - p2[0]
-        y = vertices[i][1] - p2[1]
-        sq_dist = x ** 2 + y ** 2
+        sq_dist = pointpointSqDist(vertices[i], p2)
         if sq_dist < min_sq_dist:
             min_sq_dist = sq_dist
             v_i = i
