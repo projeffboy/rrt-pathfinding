@@ -57,6 +57,10 @@ def genPoint():
         # Gaussian with mean at the goal
         x = random.gauss(tx, sigmax_for_randgen)
         y = random.gauss(ty, sigmay_for_randgen)
+    elif args.rrt_sampling_policy == "triangular":
+        # Gaussian with mean at the goal
+        x = random.triangular(0, tx, XMAX)
+        y = random.triangular(0, ty, YMAX)
     else:
         print "Not yet implemented"
         quit(1)
@@ -72,6 +76,10 @@ def genPoint():
             # Gaussian with mean at the goal
             x = random.gauss(tx, sigmax_for_randgen)
             y = random.gauss(ty, sigmay_for_randgen)
+        elif args.rrt_sampling_policy == "triangular":
+            # Gaussian with mean at the goal
+            x = random.triangular(0, tx, XMAX)
+            y = random.triangular(0, ty, YMAX)
         else:
             print "Not yet implemented"
             quit(1)
@@ -121,15 +129,14 @@ def pointPointDistance(p1,p2):
 def closestPointToPoint(G,p2):
     #TODO
     min_sq_dist = float('inf')
-    v_i = 0
+    parent = 0
     for i in G[0]:
         sq_dist = pointpointSqDist(vertices[i], p2)
         if sq_dist < min_sq_dist:
             min_sq_dist = sq_dist
-            v_i = i
-
+            parent = i
     #return vertex index
-    return v_i
+    return parent
 
 def signedArea(l1, l2):
     return l1[0] * l2[1] - l2[0] * l1[1]
@@ -139,13 +146,9 @@ def notSameSgn(num1, num2):
         or (num1 >= 0 and num2 <= 0)) \
         and not (num1 == 0 and num2 == 0)
 
-def lineHitsRect(p1,p2,r, dilation=0.75):
+def lineHitsRect(p1,p2,r):
     #TODO
     x1, y1, x2, y2 = r # rectangle corner points
-    x1 -= dilation
-    y1 -= dilation
-    x2 += dilation
-    y2 += dilation
     sides = [
         [[x1, y1], [x2, y1]],
         [[x1, y2], [x2, y2]],
@@ -173,11 +176,11 @@ def lineHitsRect(p1,p2,r, dilation=0.75):
 def inRect(p,rect,dilation):
     """ Return 1 in p is inside rect, dilated by dilation (for edge cases). """
     #TODO
-    
+    # x1 <= x <= x2, y1 <= y <= y2
     if rect[0] - dilation <= p[0] \
     and p[0] <= rect[2] + dilation \
-    and rect[3] - dilation <= p[0] \
-    and p[0] <= rect[1] + dilation:
+    and rect[1] - dilation <= p[1] \
+    and p[1] <= rect[3] + dilation:
         return 1
     else:
         return 0
