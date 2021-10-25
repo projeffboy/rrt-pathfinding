@@ -93,7 +93,7 @@ def genPoint():
     theta = (random.random() - 0.5) * math.pi
     return [x, y, theta]
 
-def getRobotSegment(point):
+def getRobotSegment(point): # 3D point
     extend = [
         ROBOT_LENGTH / 2 * math.cos(point[2]),
         ROBOT_LENGTH / 2 * math.sin(point[2]),
@@ -217,7 +217,11 @@ def rrt_search(G, tx, ty, tz, canvas):
     global sigmax_for_randgen, sigmay_for_randgen
     n=0
     nsteps=0
+    rrt_iterations = 0 # number of rrt iterations
     while 1:
+        #TODO (INFORMAL)
+        rrt_iterations += 1
+
         p = genPoint() # x_rand <- SampleFree
         v = closestPointToPoint(G,p)
 
@@ -273,9 +277,13 @@ def rrt_search(G, tx, ty, tz, canvas):
         if pointPointDistance( p, [tx,ty] ) < SMALLSTEP:
             print "Target achieved.", nsteps, "nodes in entire tree"
             if visualize:
-                t = pointToVertex([tx, ty])  # is the new vertex ID
+                t = pointToVertex([tx, ty, tz])  # is the new vertex ID
                 G[edges].append((k, t))
                 if visualize:
+                    robot_end1, robot_end2 = getRobotSegment(vertices[t])
+                    canvas.polyline([robot_end1, robot_end2], 4)
+                    robot_end1, robot_end2 = getRobotSegment(vertices[k])
+                    canvas.polyline([robot_end1, robot_end2], 4)
                     canvas.polyline([p, vertices[t]], 1)
                 # while 1:
                 #     # backtrace and show the solution ...
@@ -290,6 +298,8 @@ def rrt_search(G, tx, ty, tz, canvas):
                     nsteps = nsteps + 1  # count steps
                     totaldist = totaldist + pointPointDistance(vertices[k], oldp)  # sum lengths
                 print "Path length", totaldist, "using", nsteps, "nodes."
+                #TODO (INFORMAL)
+                print "Number of iterations: ", rrt_iterations
 
                 global prompt_before_next
                 if prompt_before_next:

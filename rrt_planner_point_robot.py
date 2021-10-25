@@ -193,7 +193,11 @@ def rrt_search(G, tx, ty, canvas):
     global sigmax_for_randgen, sigmay_for_randgen
     n=0
     nsteps=0
+    rrt_iterations = 0 # number of rrt iterations
     while 1:
+        #TODO (INFORMAL)
+        rrt_iterations += 1
+
         p = genPoint() # x_rand <- SampleFree
         v = closestPointToPoint(G,p)
         #TODO (INFORMAL) x_new <- Steer(x_nearest, x_rand)
@@ -253,6 +257,8 @@ def rrt_search(G, tx, ty, canvas):
                     nsteps = nsteps + 1  # count steps
                     totaldist = totaldist + pointPointDistance(vertices[k], oldp)  # sum lengths
                 print "Path length", totaldist, "using", nsteps, "nodes."
+                #TODO (INFORMAL)
+                print "Number of iterations: ", rrt_iterations
 
                 global prompt_before_next
                 if prompt_before_next:
